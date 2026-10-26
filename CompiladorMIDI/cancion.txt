@@ -1,29 +1,31 @@
-tempo 120
-Sol 4 corchea
-Sol 4 corchea
-La 4 negra
-Sol 4 negra
-Do 5 negra
-Si 4 blanca
+tempo 200
 
-Sol 4 corchea
-Sol 4 corchea
-La 4 negra
-Sol 4 negra
-Re 5 negra
-Do 5 blanca
-
-Sol 4 corchea
-Sol 4 corchea
+acorde Do 4 Mi 4 Sol 4 negra
+Mi 5 corchea
+Mi 5 corchea
+Mi 5 corchea
+Do 5 corchea
+Mi 5 corchea
 Sol 5 negra
-Mi 5 negra
-Do 5 negra
-Si 4 negra
-La 4 blanca
+Sol 4 negra
 
+Do 5 corchea
+Sol 4 corchea
+Mi 4 corchea
+La 4 corchea
+Si 4 corchea
+La 4 corchea
+Sol 4 corchea
+Mi 5 corchea
+Sol 5 corchea
+La 5 negra
 Fa 5 corchea
-Fa 5 corchea
-Mi 5 negra
-Do 5 negra
-Re 5 negra
-Do 5 blanca
+Sol 5 corchea
+Mi 5 corchea
+Do 5 corchea
+Re 5 corchea
+Si 4 negra
+
+acorde Fa 4 La 4 Do 5 negra
+acorde Sol 4 Si 4 Re 5 negra
+acorde Do 4 Mi 4 Sol 4 Do 5 blanca

@@ -1,39 +1,56 @@
+using System.Collections.Generic;
+
 COMPILER Cancion
 
-public Midi midi = new Midi();
+  public Midi midi = new Midi();
 
 CHARACTERS
-digito = "0123456789".
+  digito = "0123456789".
 
 TOKENS
-numero = digito {digito}.
+  numero = digito {digito}.
 
 IGNORE '\r' + '\n' + '\t'
 
 PRODUCTIONS
 
 Cancion =
-"tempo" numero (. midi.Tempo = int.Parse(t.val); .)
-{ Nota }
-.
+  "tempo" numero          (. midi.Tempo = int.Parse(t.val); .)
+  { Nota }
+  .
 
-Nota (. int altura, octava, dur; .)
+Nota                      (. int altura, octava, dur; .)
 = Altura<out altura>
-numero (. octava = int.Parse(t.val); .)
-Duracion<out dur> (. midi.AgregarNota(12 * (octava + 1) + altura, dur); .)
-.
+  numero                  (. octava = int.Parse(t.val); .)
+  Duracion<out dur>       (. midi.AgregarNota(12 * (octava + 1) + altura, dur); .)
+| "silencio"
+  Duracion<out dur>       (. midi.AgregarSilencio(dur); .)
+| Acorde
+  .
 
-Altura<out int n> (. n = 0; .)
-= "Do" (. n = 0; .) | "Re" (. n = 2; .) | "Mi" (. n = 4; .)
-| "Fa" (. n = 5; .) | "Sol" (. n = 7; .) | "La" (. n = 9; .)
-| "Si" (. n = 11; .)
-.
+Acorde                    (. var notas = new List<int>(); int altura, octava, dur; .)
+= "acorde"
+  Altura<out altura>
+  numero                  (. octava = int.Parse(t.val);
+                             notas.Add(12 * (octava + 1) + altura); .)
+  { Altura<out altura>
+    numero                (. octava = int.Parse(t.val);
+                             notas.Add(12 * (octava + 1) + altura); .)
+  }
+  Duracion<out dur>       (. midi.AgregarAcorde(notas, dur); .)
+  .
 
-Duracion<out int d> (. d = 0; .)
+Altura<out int n>         (. n = 0; .)
+= "Do"  (. n = 0; .)  | "Re"  (. n = 2; .)  | "Mi" (. n = 4; .)
+| "Fa"  (. n = 5; .)  | "Sol" (. n = 7; .)  | "La" (. n = 9; .)
+| "Si"  (. n = 11; .)
+  .
+
+Duracion<out int d>       (. d = 0; .)
 = "redonda" (. d = 1920; .)
-| "blanca" (. d = 960; .)
-| "negra" (. d = 480; .)
+| "blanca"  (. d = 960; .)
+| "negra"   (. d = 480; .)
 | "corchea" (. d = 240; .)
-.
+  .
 
 END Cancion.

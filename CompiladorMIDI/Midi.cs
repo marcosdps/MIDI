@@ -18,6 +18,29 @@ public class Midi
         eventos.Add(0x80); eventos.Add((byte)nota); eventos.Add(0);
     }
 
+    public void AgregarSilencio(int duracion)
+    {
+        // Un silencio es solo avanzar el tiempo sin emitir sonido
+        EscribirDelta(duracion);
+    }
+
+    public void AgregarAcorde(List<int> notas, int duracion)
+    {
+    // Note-On de todas las notas al mismo tiempo (delta 0)
+    foreach (int nota in notas)
+    {
+        EscribirDelta(0);
+        eventos.Add(0x90); eventos.Add((byte)nota); eventos.Add(100);
+    }
+
+    // Note-Off: la primera espera la duración, las demás terminan en el mismo instante
+    for (int i = 0; i < notas.Count; i++)
+    {
+        EscribirDelta(i == 0 ? duracion : 0);
+        eventos.Add(0x80); eventos.Add((byte)notas[i]); eventos.Add(0);
+    }
+    }
+
     public void Guardar(string ruta)
     {
         var pista = new List<byte>();
