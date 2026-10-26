@@ -18,6 +18,12 @@ public class Midi
         eventos.Add(0x80); eventos.Add((byte)nota); eventos.Add(0);
     }
 
+    public void AgregarSilencio(int duracion)
+    {
+        // Un silencio es solo avanzar el tiempo sin emitir sonido
+        EscribirDelta(duracion);
+    }
+
     public void Guardar(string ruta)
     {
         var pista = new List<byte>();

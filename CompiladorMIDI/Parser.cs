@@ -6,7 +6,7 @@ using System;
 public class Parser {
 	public const int _EOF = 0;
 	public const int _numero = 1;
-	public const int maxT = 14;
+	public const int maxT = 15;
 
 	const bool _T = true;
 	const bool _x = false;
@@ -91,70 +91,76 @@ public Midi midi = new Midi();
 
 	void Nota() {
 		int altura, octava, dur; 
-		Altura(out altura);
-		Expect(1);
-		octava = int.Parse(t.val); 
-		Duracion(out dur);
-		midi.AgregarNota(12 * (octava + 1) + altura, dur); 
+		if (StartOf(2)) {
+			Altura(out altura);
+			Expect(1);
+			octava = int.Parse(t.val); 
+			Duracion(out dur);
+			midi.AgregarNota(12 * (octava + 1) + altura, dur); 
+		} else if (la.kind == 3) {
+			Get();
+			Duracion(out dur);
+			midi.AgregarSilencio(dur); 
+		} else SynErr(16);
 	}
 
 	void Altura(out int n) {
 		n = 0; 
 		switch (la.kind) {
-		case 3: {
+		case 4: {
 			Get();
 			n = 0; 
 			break;
 		}
-		case 4: {
+		case 5: {
 			Get();
 			n = 2; 
 			break;
 		}
-		case 5: {
+		case 6: {
 			Get();
 			n = 4; 
 			break;
 		}
-		case 6: {
+		case 7: {
 			Get();
 			n = 5; 
 			break;
 		}
-		case 7: {
+		case 8: {
 			Get();
 			n = 7; 
 			break;
 		}
-		case 8: {
+		case 9: {
 			Get();
 			n = 9; 
 			break;
 		}
-		case 9: {
+		case 10: {
 			Get();
 			n = 11; 
 			break;
 		}
-		default: SynErr(15); break;
+		default: SynErr(17); break;
 		}
 	}
 
 	void Duracion(out int d) {
 		d = 0; 
-		if (la.kind == 10) {
+		if (la.kind == 11) {
 			Get();
 			d = 1920; 
-		} else if (la.kind == 11) {
-			Get();
-			d = 960; 
 		} else if (la.kind == 12) {
 			Get();
-			d = 480; 
+			d = 960; 
 		} else if (la.kind == 13) {
 			Get();
+			d = 480; 
+		} else if (la.kind == 14) {
+			Get();
 			d = 240; 
-		} else SynErr(16);
+		} else SynErr(18);
 	}
 
 
@@ -169,8 +175,9 @@ public Midi midi = new Midi();
 	}
 	
 	static readonly bool[,] set = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x},
-		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x}
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x},
+		{_x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x}
 
 	};
 } // end Parser
@@ -187,20 +194,22 @@ public class Errors {
 			case 0: s = "EOF expected"; break;
 			case 1: s = "numero expected"; break;
 			case 2: s = "\"tempo\" expected"; break;
-			case 3: s = "\"Do\" expected"; break;
-			case 4: s = "\"Re\" expected"; break;
-			case 5: s = "\"Mi\" expected"; break;
-			case 6: s = "\"Fa\" expected"; break;
-			case 7: s = "\"Sol\" expected"; break;
-			case 8: s = "\"La\" expected"; break;
-			case 9: s = "\"Si\" expected"; break;
-			case 10: s = "\"redonda\" expected"; break;
-			case 11: s = "\"blanca\" expected"; break;
-			case 12: s = "\"negra\" expected"; break;
-			case 13: s = "\"corchea\" expected"; break;
-			case 14: s = "??? expected"; break;
-			case 15: s = "invalid Altura"; break;
-			case 16: s = "invalid Duracion"; break;
+			case 3: s = "\"silencio\" expected"; break;
+			case 4: s = "\"Do\" expected"; break;
+			case 5: s = "\"Re\" expected"; break;
+			case 6: s = "\"Mi\" expected"; break;
+			case 7: s = "\"Fa\" expected"; break;
+			case 8: s = "\"Sol\" expected"; break;
+			case 9: s = "\"La\" expected"; break;
+			case 10: s = "\"Si\" expected"; break;
+			case 11: s = "\"redonda\" expected"; break;
+			case 12: s = "\"blanca\" expected"; break;
+			case 13: s = "\"negra\" expected"; break;
+			case 14: s = "\"corchea\" expected"; break;
+			case 15: s = "??? expected"; break;
+			case 16: s = "invalid Nota"; break;
+			case 17: s = "invalid Altura"; break;
+			case 18: s = "invalid Duracion"; break;
 
 			default: s = "error " + n; break;
 		}

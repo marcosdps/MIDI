@@ -21,6 +21,8 @@ Nota (. int altura, octava, dur; .)
 = Altura<out altura>
 numero (. octava = int.Parse(t.val); .)
 Duracion<out dur> (. midi.AgregarNota(12 * (octava + 1) + altura, dur); .)
+| "silencio"
+Duracion<out dur> (. midi.AgregarSilencio(dur); .)
 .
 
 Altura<out int n> (. n = 0; .)
