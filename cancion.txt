@@ -1,0 +1,76 @@
+tempo 110
+
+motivo @progresion
+  [Mi 3 Si 3 Mi 4] blanca
+  [Mi 3 Si 3 Mi 4] blanca
+  [Do 3 Sol 3 Do 4] blanca
+  [Do 3 Sol 3 Do 4] blanca
+  [Sol 3 Re 4 Sol 4] blanca
+  [Sol 3 Re 4 Sol 4] blanca
+  [Re 3 La 3 Re 4] blanca
+  [Re 3 La 3 Re 4] blanca
+fin
+
+motivo @riffBajo
+  Mi 2 negra
+  Mi 2 negra
+  Mi 2 negra
+  Mi 2 negra
+  Do 2 negra
+  Do 2 negra
+  Do 2 negra
+  Do 2 negra
+  Sol 2 negra
+  Sol 2 negra
+  Sol 2 negra
+  Sol 2 negra
+  Re 2 negra
+  Re 2 negra
+  Re 2 negra
+  Re 2 negra
+fin
+
+ritmo @base
+  [bombo hihat] corchea
+  hihat corchea
+  [caja hihat] corchea
+  hihat corchea
+  [bombo hihat] corchea
+  [bombo hihat] corchea
+  [caja hihat] corchea
+  hihat corchea
+fin
+
+ritmo @redoble
+  caja corchea
+  caja corchea
+  tomagudo corchea
+  tomagudo corchea
+  tommedio corchea
+  tommedio corchea
+  tomgrave corchea
+  tomgrave corchea
+fin
+
+instrumento guitarra
+tocar @progresion
+tocar @progresion
+[Mi 3 Si 3 Mi 4] redonda
+
+pista
+instrumento bajo
+tocar @riffBajo
+tocar @riffBajo
+Mi 2 redonda
+
+bateria
+kit acustica
+tocar @base
+tocar @base
+tocar @base
+tocar @redoble
+tocar @base
+tocar @base
+tocar @base
+tocar @redoble
+[bombo crash] redonda

@@ -1,0 +1,172 @@
+using System.Collections.Generic;
+
+COMPILER Cancion
+
+  public Midi midi = new Midi();
+  public TablaSimbolos tabla = new TablaSimbolos();
+
+CHARACTERS
+  digito = "0123456789".
+  letra  = 'a'..'z' + 'A'..'Z'.
+
+TOKENS
+  numero = digito {digito}.
+  ident  = "@" letra { letra | digito }.
+
+IGNORE '\r' + '\n' + '\t'
+
+PRODUCTIONS
+
+Cancion =
+  "tempo" numero          (. midi.Tempo = int.Parse(t.val); .)
+  { Definicion }
+  Contenido
+  { "pista"               (. if (!midi.NuevaPista(false))
+                               SemErr("no quedan canales para mas pistas"); .)
+    Contenido
+  | "bateria"             (. midi.NuevaPista(true); .)
+    [ Kit ]
+    ContenidoBateria
+  }
+  .
+
+Contenido =
+  { Nota | Silencio | Instrumento | Acorde | Tocar<TipoMotivo.Melodico> }
+  .
+
+ContenidoBateria =
+  { Golpe | Golpes | Silencio | Tocar<TipoMotivo.Percusion> }
+  .
+
+Definicion                (. Simbolo s = null; .)
+= ( "motivo" Nombre<TipoMotivo.Melodico, out s>  Contenido
+  | "ritmo"  Nombre<TipoMotivo.Percusion, out s> ContenidoBateria
+  )
+  "fin"                   (. midi.TerminarGrabacion();
+                             tabla.Insertar(s); .)
+  .
+
+Nombre<TipoMotivo tipo, out Simbolo s>
+= ident                   (. if (tabla.Buscar(t.val) != null)
+                               SemErr("el motivo " + t.val + " ya fue definido");
+                             s = new Simbolo(t.val, tipo, t.line);
+                             midi.EmpezarGrabacion(s.Contenido); .)
+  .
+
+Tocar<TipoMotivo esperado>
+= "tocar" ident           (. Simbolo s = tabla.Buscar(t.val);
+                             if (s == null)
+                               SemErr("el motivo " + t.val + " no esta definido");
+                             else if (s.Tipo != esperado)
+                               SemErr("el motivo " + t.val + " no es del tipo de esta pista");
+                             else
+                               midi.Tocar(s.Contenido); .)
+  .
+
+Golpe                     (. int n, dur; .)
+= Percusion<out n>
+  Duracion<out dur>       (. midi.AgregarNota(n, dur); .)
+  .
+
+Golpes                    (. int n, dur;
+                             List<int> sonidos = new List<int>(); .)
+= "["
+  Percusion<out n>        (. sonidos.Add(n); .)
+  { Percusion<out n>      (. sonidos.Add(n); .)
+  }
+  "]"
+  Duracion<out dur>       (. midi.AgregarAcorde(sonidos, dur); .)
+  .
+
+Percusion<out int n>      (. n = 36; .)
+= "bombo"        (. n = 36; .)
+| "aro"          (. n = 37; .)
+| "caja"         (. n = 38; .)
+| "palmas"       (. n = 39; .)
+| "hihat"        (. n = 42; .)
+| "tomgrave"     (. n = 45; .)
+| "hihatabierto" (. n = 46; .)
+| "tommedio"     (. n = 47; .)
+| "crash"        (. n = 49; .)
+| "tomagudo"     (. n = 50; .)
+| "ride"         (. n = 51; .)
+| "pandereta"    (. n = 54; .)
+| "cencerro"     (. n = 56; .)
+  .
+
+Kit                       (. int k = 0; .)
+= "kit"
+  ( "acustica"    (. k = 0; .)
+  | "electronica" (. k = 24; .)
+  | "ritmos"      (. k = 25; .)
+  | "jazz"        (. k = 32; .)
+  | "escobillas"  (. k = 40; .)
+  )               (. midi.CambiarInstrumento(k); .)
+  .
+
+Nota                      (. int nota, dur; .)
+= Tono<out nota>
+  Duracion<out dur>       (. midi.AgregarNota(nota, dur); .)
+  .
+
+Acorde                    (. int nota, dur;
+                             List<int> notas = new List<int>(); .)
+= "["
+  Tono<out nota>          (. notas.Add(nota); .)
+  { Tono<out nota>        (. notas.Add(nota); .)
+  }
+  "]"
+  Duracion<out dur>       (. midi.AgregarAcorde(notas, dur); .)
+  .
+
+Tono<out int nota>        (. int altura, alteracion, octava; nota = 0; .)
+= Altura<out altura>
+  Alteracion<out alteracion>
+  numero                  (. octava = int.Parse(t.val);
+                             nota = 12 * (octava + 1) + altura + alteracion; .)
+  .
+
+Instrumento               (. int p = 0; .)
+= "instrumento"
+  ( NombreInstrumento<out p>
+  | numero                (. p = int.Parse(t.val) - 1;
+                             if (p < 0 || p > 127)
+                               SemErr("el instrumento debe estar entre 1 y 128"); .)
+  )                       (. midi.CambiarInstrumento(p); .)
+  .
+
+NombreInstrumento<out int p>  (. p = 0; .)
+= "piano"    (. p = 0; .)
+| "organo"   (. p = 19; .)
+| "guitarra" (. p = 24; .)
+| "bajo"     (. p = 33; .)
+| "violin"   (. p = 40; .)
+| "trompeta" (. p = 56; .)
+| "flauta"   (. p = 73; .)
+  .
+
+Silencio                  (. int dur; .)
+= "silencio"
+  Duracion<out dur>       (. midi.AgregarSilencio(dur); .)
+  .
+
+Alteracion<out int a>     (. a = 0; .)
+= [ "#"                   (. a = 1; .)
+  | "b"                   (. a = -1; .)
+  ]
+  .
+
+Altura<out int n>         (. n = 0; .)
+= "Do"  (. n = 0; .)  | "Re"  (. n = 2; .)  | "Mi" (. n = 4; .)
+| "Fa"  (. n = 5; .)  | "Sol" (. n = 7; .)  | "La" (. n = 9; .)
+| "Si"  (. n = 11; .)
+  .
+
+Duracion<out int d>       (. d = 0; .)
+= "redonda" (. d = 1920; .)
+| "blanca"  (. d = 960; .)
+| "negra"   (. d = 480; .)
+| "corchea" (. d = 240; .)
+  .
+
+END Cancion.

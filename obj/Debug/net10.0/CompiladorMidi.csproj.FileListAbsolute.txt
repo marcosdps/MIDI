@@ -1,0 +1,28 @@
+C:\Users\lucia\OneDrive\Desktop\compiladores\trabajo final\CompiladorMidi\bin\Debug\net10.0\CompiladorMidi.exe
+C:\Users\lucia\OneDrive\Desktop\compiladores\trabajo final\CompiladorMidi\bin\Debug\net10.0\CompiladorMidi.deps.json
+C:\Users\lucia\OneDrive\Desktop\compiladores\trabajo final\CompiladorMidi\bin\Debug\net10.0\CompiladorMidi.runtimeconfig.json
+C:\Users\lucia\OneDrive\Desktop\compiladores\trabajo final\CompiladorMidi\bin\Debug\net10.0\CompiladorMidi.dll
+C:\Users\lucia\OneDrive\Desktop\compiladores\trabajo final\CompiladorMidi\bin\Debug\net10.0\CompiladorMidi.pdb
+C:\Users\lucia\OneDrive\Desktop\compiladores\trabajo final\CompiladorMidi\obj\Debug\net10.0\CompiladorMidi.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\lucia\OneDrive\Desktop\compiladores\trabajo final\CompiladorMidi\obj\Debug\net10.0\CompiladorMidi.AssemblyInfoInputs.cache
+C:\Users\lucia\OneDrive\Desktop\compiladores\trabajo final\CompiladorMidi\obj\Debug\net10.0\CompiladorMidi.AssemblyInfo.cs
+C:\Users\lucia\OneDrive\Desktop\compiladores\trabajo final\CompiladorMidi\obj\Debug\net10.0\CompiladorMidi.csproj.CoreCompileInputs.cache
+C:\Users\lucia\OneDrive\Desktop\compiladores\trabajo final\CompiladorMidi\obj\Debug\net10.0\CompiladorMidi.dll
+C:\Users\lucia\OneDrive\Desktop\compiladores\trabajo final\CompiladorMidi\obj\Debug\net10.0\refint\CompiladorMidi.dll
+C:\Users\lucia\OneDrive\Desktop\compiladores\trabajo final\CompiladorMidi\obj\Debug\net10.0\CompiladorMidi.pdb
+C:\Users\lucia\OneDrive\Desktop\compiladores\trabajo final\CompiladorMidi\obj\Debug\net10.0\CompiladorMidi.genruntimeconfig.cache
+C:\Users\lucia\OneDrive\Desktop\compiladores\trabajo final\CompiladorMidi\obj\Debug\net10.0\ref\CompiladorMidi.dll
+C:\Users\marco\Desktop\CompiladorMidi\bin\Debug\net10.0\CompiladorMidi.exe
+C:\Users\marco\Desktop\CompiladorMidi\bin\Debug\net10.0\CompiladorMidi.deps.json
+C:\Users\marco\Desktop\CompiladorMidi\bin\Debug\net10.0\CompiladorMidi.runtimeconfig.json
+C:\Users\marco\Desktop\CompiladorMidi\bin\Debug\net10.0\CompiladorMidi.dll
+C:\Users\marco\Desktop\CompiladorMidi\bin\Debug\net10.0\CompiladorMidi.pdb
+C:\Users\marco\Desktop\CompiladorMidi\obj\Debug\net10.0\CompiladorMidi.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\marco\Desktop\CompiladorMidi\obj\Debug\net10.0\CompiladorMidi.AssemblyInfoInputs.cache
+C:\Users\marco\Desktop\CompiladorMidi\obj\Debug\net10.0\CompiladorMidi.AssemblyInfo.cs
+C:\Users\marco\Desktop\CompiladorMidi\obj\Debug\net10.0\CompiladorMidi.csproj.CoreCompileInputs.cache
+C:\Users\marco\Desktop\CompiladorMidi\obj\Debug\net10.0\CompiladorMidi.dll
+C:\Users\marco\Desktop\CompiladorMidi\obj\Debug\net10.0\refint\CompiladorMidi.dll
+C:\Users\marco\Desktop\CompiladorMidi\obj\Debug\net10.0\CompiladorMidi.pdb
+C:\Users\marco\Desktop\CompiladorMidi\obj\Debug\net10.0\CompiladorMidi.genruntimeconfig.cache
+C:\Users\marco\Desktop\CompiladorMidi\obj\Debug\net10.0\ref\CompiladorMidi.dll
