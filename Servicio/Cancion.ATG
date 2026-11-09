@@ -1,0 +1,289 @@
+using System.Collections.Generic;
+using System.Globalization;
+
+COMPILER Cancion
+
+  public Midi midi = new Midi();
+  public TablaSimbolos tabla = new TablaSimbolos();
+
+  // Busca un nombre y controla que este declarado y sea del tipo esperado
+  Simbolo Usar(string nombre, Tipo esperado) {
+    Simbolo s = tabla.Buscar(nombre);
+    if (s == null) {
+      SemErr(nombre + " no esta declarado");
+      return null;
+    }
+    if (s.Tipo != esperado) {
+      SemErr(nombre + " es de tipo " + Simbolo.NombreTipo(s.Tipo)
+             + "; se esperaba " + Simbolo.NombreTipo(esperado));
+      return null;
+    }
+    return s;
+  }
+
+CHARACTERS
+  digito    = "0123456789".
+  minuscula = 'a'..'z'.
+  letra     = 'a'..'z' + 'A'..'Z'.
+  finLinea  = '\n'.
+
+TOKENS
+  numero = digito {digito}.
+  real   = digito {digito} "." digito {digito}.
+  ident  = minuscula { letra | digito }.
+
+COMMENTS FROM "//" TO finLinea
+
+IGNORE '\r' + '\n' + '\t'
+
+PRODUCTIONS
+
+/* ---------- Estructura general ---------- */
+
+Cancion =
+  "tempo" numero          (. midi.Tempo = int.Parse(t.val);
+                             if (midi.Tempo <= 0) SemErr("el tempo debe ser mayor que 0"); .)
+  { Declaracion }
+  Bloque
+  { Bloque }
+  .
+
+/* ---------- Declaraciones de variables ---------- */
+
+Declaracion               (. string nombre; int linea; double n;
+                             List<double> ac; List<Elemento> pasos;
+                             Simbolo s = null; .)
+= ( "nota" Nombre<out nombre, out linea>
+    "=" NotaValor<out n>          (. s = new Simbolo(nombre, Tipo.Nota, linea);
+                                     s.Nota = n; .)
+  | "acorde" Nombre<out nombre, out linea>
+    "=" AcordeValor<out ac>       (. s = new Simbolo(nombre, Tipo.Acorde, linea);
+                                     s.Acorde = ac; .)
+  | "secuencia" Nombre<out nombre, out linea>
+    "=" Secuencia<out pasos>      (. s = new Simbolo(nombre, Tipo.Secuencia, linea);
+                                     s.Pasos = pasos; .)
+  | "golpes" Nombre<out nombre, out linea>
+    "=" SecuenciaGolpes<out pasos> (. s = new Simbolo(nombre, Tipo.Golpes, linea);
+                                      s.Pasos = pasos; .)
+  | "entero" Nombre<out nombre, out linea>
+    "=" numero                    (. s = new Simbolo(nombre, Tipo.Entero, linea);
+                                     s.Entero = int.Parse(t.val); .)
+  )
+  ";"                             (. tabla.Insertar(s); .)
+  .
+
+Nombre<out string nombre, out int linea>
+= ident                   (. nombre = t.val; linea = t.line;
+                             if (tabla.Buscar(nombre) != null)
+                               SemErr(nombre + " ya fue declarado"); .)
+  .
+
+/* ---------- Notas ---------- */
+
+NotaValor<out double n>   (. Simbolo s; n = 0; .)
+= Tono<out n>
+| Frecuencia<out n>
+| ident                   (. s = Usar(t.val, Tipo.Nota);
+                             if (s != null) n = s.Nota; .)
+  .
+
+Tono<out double n>        (. int altura, alteracion, octava; n = 0; .)
+= Altura<out altura>
+  Alteracion<out alteracion>
+  numero                  (. octava = int.Parse(t.val);
+                             n = 12 * (octava + 1) + altura + alteracion;
+                             if (n < 0 || n > 127)
+                               SemErr("nota fuera del rango MIDI"); .)
+  .
+
+Frecuencia<out double n>  (. double f = 0; n = 0; .)
+= ( numero | real )       (. f = double.Parse(t.val, CultureInfo.InvariantCulture); .)
+  "hz"                    (. n = 69 + 12 * Math.Log2(f / 440.0);
+                             if (f <= 0 || Math.Round(n) < 0 || Math.Round(n) > 127)
+                               SemErr("frecuencia fuera del rango MIDI (8.2 a 12543 hz)"); .)
+  .
+
+Altura<out int n>         (. n = 0; .)
+= "Do"  (. n = 0; .)  | "Re"  (. n = 2; .)  | "Mi" (. n = 4; .)
+| "Fa"  (. n = 5; .)  | "Sol" (. n = 7; .)  | "La" (. n = 9; .)
+| "Si"  (. n = 11; .)
+  .
+
+Alteracion<out int a>     (. a = 0; .)
+= [ "#"                   (. a = 1; .)
+  | "b"                   (. a = -1; .)
+  ]
+  .
+
+/* ---------- Acordes ---------- */
+
+AcordeValor<.out List<double> ac.>  (. Simbolo s; ac = new List<double>(); .)
+= AcordeLit<out ac>
+| ident                   (. s = Usar(t.val, Tipo.Acorde);
+                             if (s != null) ac = s.Acorde; .)
+  .
+
+AcordeLit<.out List<double> ac.>    (. double n; ac = new List<double>(); .)
+= "["
+  NotaValor<out n>        (. ac.Add(n); .)
+  { "," NotaValor<out n>  (. ac.Add(n); .)
+  }
+  "]"                     (. if (!Midi.MismaDesafinacion(ac))
+                               SemErr("un acorde no puede mezclar notas con distinta desafinacion"); .)
+  .
+
+/* ---------- Secuencias ---------- */
+
+Secuencia<.out List<Elemento> pasos.>   (. Elemento e; pasos = new List<Elemento>(); .)
+= "{"
+  [ Paso<out e>           (. pasos.Add(e); .)
+    { "," Paso<out e>     (. pasos.Add(e); .)
+    }
+  ]
+  "}"
+  .
+
+Paso<out Elemento e>      (. List<double> notas; int dur; e = null; .)
+= Sonido<out notas>
+  Duracion<out dur>       (. e = new Elemento(notas, dur); .)
+| "silencio"
+  Duracion<out dur>       (. e = new Elemento(new List<double>(), dur); .)
+  .
+
+Sonido<.out List<double> notas.>    (. double n; Simbolo s; notas = new List<double>(); .)
+= Tono<out n>             (. notas.Add(n); .)
+| Frecuencia<out n>       (. notas.Add(n); .)
+| AcordeLit<out notas>
+| ident                   (. s = tabla.Buscar(t.val);
+                             if (s == null)
+                               SemErr(t.val + " no esta declarado");
+                             else if (s.Tipo == Tipo.Nota)
+                               notas.Add(s.Nota);
+                             else if (s.Tipo == Tipo.Acorde)
+                               notas.AddRange(s.Acorde);
+                             else
+                               SemErr(t.val + " es de tipo " + Simbolo.NombreTipo(s.Tipo)
+                                      + "; se esperaba nota o acorde"); .)
+  .
+
+Duracion<out int d>       (. d = 0; .)
+= "redonda" (. d = 1920; .)
+| "blanca"  (. d = 960; .)
+| "negra"   (. d = 480; .)
+| "corchea" (. d = 240; .)
+  .
+
+/* ---------- Percusion ---------- */
+
+SecuenciaGolpes<.out List<Elemento> pasos.>   (. Elemento e; pasos = new List<Elemento>(); .)
+= "{"
+  [ PasoGolpe<out e>       (. pasos.Add(e); .)
+    { "," PasoGolpe<out e> (. pasos.Add(e); .)
+    }
+  ]
+  "}"
+  .
+
+PasoGolpe<out Elemento e> (. List<double> sonidos = new List<double>(); int n, dur; e = null; .)
+= ( Percusion<out n>      (. sonidos.Add(n); .)
+  | "["
+    Percusion<out n>      (. sonidos.Add(n); .)
+    { "," Percusion<out n> (. sonidos.Add(n); .)
+    }
+    "]"
+  )
+  Duracion<out dur>       (. e = new Elemento(sonidos, dur); .)
+| "silencio"
+  Duracion<out dur>       (. e = new Elemento(new List<double>(), dur); .)
+  .
+
+Percusion<out int n>      (. n = 36; .)
+= "bombo"        (. n = 36; .)
+| "aro"          (. n = 37; .)
+| "caja"         (. n = 38; .)
+| "palmas"       (. n = 39; .)
+| "hihat"        (. n = 42; .)
+| "tomgrave"     (. n = 45; .)
+| "hihatabierto" (. n = 46; .)
+| "tommedio"     (. n = 47; .)
+| "crash"        (. n = 49; .)
+| "tomagudo"     (. n = 50; .)
+| "ride"         (. n = 51; .)
+| "pandereta"    (. n = 54; .)
+| "cencerro"     (. n = 56; .)
+  .
+
+/* ---------- Bloques (pistas) ---------- */
+
+Bloque =
+  "pista"                 (. if (!midi.NuevaPista(false))
+                               SemErr("no quedan canales para mas pistas"); .)
+  [ Instrumento ]
+  "{"
+  [ ItemMelodico { "," ItemMelodico } ]
+  "}"
+| "bateria"               (. midi.NuevaPista(true); .)
+  [ Kit ]
+  "{"
+  [ ItemPercusion { "," ItemPercusion } ]
+  "}"
+  .
+
+ItemMelodico              (. Elemento e; .)
+= Paso<out e>             (. midi.Tocar(e); .)
+| Tocar<Tipo.Secuencia>
+  .
+
+ItemPercusion             (. Elemento e; .)
+= PasoGolpe<out e>        (. midi.Tocar(e); .)
+| Tocar<Tipo.Golpes>
+  .
+
+Tocar<Tipo esperado>      (. Simbolo s; int veces = 1; .)
+= "tocar"
+  ident                   (. s = Usar(t.val, esperado); .)
+  [ Cantidad<out veces>
+    "veces"
+  ]                       (. if (s != null)
+                               for (int i = 0; i < veces; i++)
+                                 foreach (Elemento e in s.Pasos) midi.Tocar(e); .)
+  .
+
+Cantidad<out int n>       (. Simbolo s; n = 1; .)
+= ( numero                (. n = int.Parse(t.val); .)
+  | ident                 (. s = Usar(t.val, Tipo.Entero);
+                             if (s != null) n = s.Entero; .)
+  )                       (. if (n < 1)
+                               SemErr("la cantidad de repeticiones debe ser al menos 1"); .)
+  .
+
+Instrumento               (. int p = 0; .)
+= "instrumento"
+  ( NombreInstrumento<out p>
+  | numero                (. p = int.Parse(t.val) - 1;
+                             if (p < 0 || p > 127)
+                               SemErr("el instrumento debe estar entre 1 y 128"); .)
+  )                       (. midi.CambiarInstrumento(p); .)
+  .
+
+NombreInstrumento<out int p>  (. p = 0; .)
+= "piano"    (. p = 0; .)
+| "organo"   (. p = 19; .)
+| "guitarra" (. p = 24; .)
+| "bajo"     (. p = 33; .)
+| "violin"   (. p = 40; .)
+| "trompeta" (. p = 56; .)
+| "flauta"   (. p = 73; .)
+  .
+
+Kit                       (. int k = 0; .)
+= "kit"
+  ( "acustica"    (. k = 0; .)
+  | "electronica" (. k = 24; .)
+  | "ritmos"      (. k = 25; .)
+  | "jazz"        (. k = 32; .)
+  | "escobillas"  (. k = 40; .)
+  )               (. midi.CambiarInstrumento(k); .)
+  .
+
+END Cancion.

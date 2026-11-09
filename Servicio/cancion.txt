@@ -1,0 +1,39 @@
+tempo 100
+
+// Notas: una constante (nombre + octava) o cualquier frecuencia en hz
+nota grave = Mi 2;
+nota la440 = 440 hz;
+nota sib   = 466.16 hz;       // coincide con Sib 4
+nota rara  = 450 hz;          // entre La 4 y Sib 4
+
+// Acordes: notas separadas por coma, sin duracion
+acorde domayor = [Do 4, Mi 4, Sol 4];
+acorde lamenor = [La 3, Do 4, Mi 4];
+acorde copia   = domayor;
+
+// Secuencias: pares "sonido duracion" separados por coma
+secuencia intro = { Do 4 negra, la440 negra, domayor blanca,
+                    silencio negra, [Fa 3, La 3, Do 4] blanca, rara negra };
+
+secuencia bajo1 = { grave negra, grave negra, Do 3 negra, Re 3 negra };
+
+golpes groove = { [bombo, hihat] corchea, hihat corchea,
+                  [caja, hihat] corchea,  hihat corchea };
+
+entero vueltas = 4;
+
+pista instrumento piano {
+  tocar intro 2 veces,
+  lamenor redonda,
+  copia redonda,
+  sib negra
+}
+
+pista instrumento bajo {
+  tocar bajo1 vueltas veces
+}
+
+bateria kit acustica {
+  tocar groove 8 veces,
+  [bombo, crash] redonda
+}
